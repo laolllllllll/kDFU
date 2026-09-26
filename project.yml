@@ -30,6 +30,7 @@ targets:
       - path: kdfu/Assets.xcassets
       - path: kdfu/index.html
       - path: kdfu/KDFU
+        type: folder
     info:
       path: kdfu/Info.plist
       properties:
