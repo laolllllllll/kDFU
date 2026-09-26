@@ -29,8 +29,8 @@ targets:
     resources:
       - path: kdfu/Assets.xcassets
       - path: kdfu/index.html
-      - path: kdfu/KDFU
-        type: folder
+      - path: kdfu/exploit7.js
+      - path: kdfu/exploit89.js
     info:
       path: kdfu/Info.plist
       properties:
