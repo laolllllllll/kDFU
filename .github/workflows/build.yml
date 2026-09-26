@@ -6,10 +6,16 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: macos-13
     steps:
       - uses: actions/checkout@v4
       
+      - name: Install Xcode 13.4.1
+        run: |
+          gem install xcode-install
+          XCODE_INSTALL_USER="3893645197@qq.com" XCODE_INSTALL_PASSWORD="Zd7898520!" xcversion install 13.4.1 || true
+          sudo xcode-select -s /Applications/Xcode_13.4.1.app/Contents/Developer || sudo xcode-select -s /Applications/Xcode_13.4.app/Contents/Developer || true
+          xcodebuild -version
       
       - name: Install XcodeGen
         run: brew install xcodegen
@@ -24,7 +30,7 @@ jobs:
             -configuration Release \
             -destination 'generic/platform=iOS' \
             -archivePath build/kDFU.xcarchive \
-            archive CODE_SIGNING_ALLOWED=NO ARCHS=armv7 VALID_ARCHS=armv7 EXCLUDED_ARCHS=""
+            archive CODE_SIGNING_ALLOWED=NO ARCHS=armv7 VALID_ARCHS=armv7 IPHONEOS_DEPLOYMENT_TARGET=8.0
       
       - name: Export IPA
         run: |
@@ -37,9 +43,3 @@ jobs:
         with:
           name: kDFU-armv7.ipa
           path: kDFU-armv7.ipa
-      
-      - name: Upload APP
-        uses: actions/upload-artifact@v4
-        with:
-          name: kDFU-armv7.app
-          path: build/kDFU.xcarchive/Products/Applications/kDFU.app
