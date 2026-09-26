@@ -1,4 +1,4 @@
-name: Build IPA
+name: Build IPA (armv7)
 on:
   push:
     branches: [ main ]
@@ -6,9 +6,14 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: macos-11
     steps:
       - uses: actions/checkout@v4
+      
+      - name: Select Xcode 13.2.1
+        run: |
+          sudo xcode-select -s /Applications/Xcode_13.2.1.app
+          xcodebuild -version
       
       - name: Install XcodeGen
         run: brew install xcodegen
@@ -16,29 +21,29 @@ jobs:
       - name: Generate Xcode Project
         run: xcodegen generate
       
-      - name: Build
+      - name: Build armv7
         run: |
           xcodebuild -project kDFU.xcodeproj \
             -scheme kDFU \
             -configuration Release \
             -destination 'generic/platform=iOS' \
             -archivePath build/kDFU.xcarchive \
-            archive CODE_SIGNING_ALLOWED=NO
+            archive CODE_SIGNING_ALLOWED=NO ARCHS=armv7 VALID_ARCHS=armv7
       
       - name: Export IPA
         run: |
           mkdir -p build/Payload
           cp -R build/kDFU.xcarchive/Products/Applications/kDFU.app build/Payload/
-          cd build && zip -r ../kDFU.ipa Payload
+          cd build && zip -r ../kDFU-armv7.ipa Payload
       
       - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
-          name: kDFU.ipa
-          path: kDFU.ipa
+          name: kDFU-armv7.ipa
+          path: kDFU-armv7.ipa
       
       - name: Upload APP
         uses: actions/upload-artifact@v4
         with:
-          name: kDFU.app
+          name: kDFU-armv7.app
           path: build/kDFU.xcarchive/Products/Applications/kDFU.app
