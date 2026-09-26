@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+    <title>kDFU</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            background: linear-gradient(180deg, #1c1c1e 0%, #000000 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: -apple-system, Helvetica, Arial, sans-serif;
+        }
+        .container {
+            text-align: center;
+            padding: 20px;
+        }
+        .title {
+            color: #8e8e93;
+            font-size: 14px;
+            margin-bottom: 40px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        /* iOS 6 风格按钮 */
+        .ios6-btn {
+            display: inline-block;
+            min-width: 200px;
+            padding: 14px 32px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #ffffff;
+            text-align: center;
+            text-decoration: none;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            background: linear-gradient(180deg, 
+                #6cb3f7 0%, 
+                #3a8cec 50%, 
+                #2473e0 50%, 
+                #1a5fc7 100%);
+            box-shadow: 
+                0 1px 0 rgba(255,255,255,0.4) inset,
+                0 -1px 0 rgba(0,0,0,0.3) inset,
+                0 2px 8px rgba(0,0,0,0.4);
+            text-shadow: 0 -1px 1px rgba(0,0,0,0.4);
+            transition: all 0.1s ease;
+        }
+        .ios6-btn:active {
+            background: linear-gradient(180deg, 
+                #1a5fc7 0%, 
+                #2473e0 50%, 
+                #3a8cec 50%, 
+                #6cb3f7 100%);
+            box-shadow: 
+                0 1px 3px rgba(0,0,0,0.5) inset;
+            transform: translateY(1px);
+        }
+        .ios6-btn:disabled {
+            background: linear-gradient(180deg, #666 0%, #444 50%, #333 100%);
+            color: #999;
+            cursor: not-allowed;
+        }
+        .status {
+            margin-top: 30px;
+            color: #636366;
+            font-size: 13px;
+            min-height: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title">kDFU Mode</div>
+        <button class="ios6-btn" id="runBtn" onclick="startKdfu()">enter kdfu</button>
+        <div class="status" id="status"></div>
+    </div>
+
+    <script>
+        var currentVer = null;
+
+        function is32BitIOS() {
+            var ua = navigator.appVersion;
+            if (!/iP(hone|od|ad)/.test(navigator.platform)) return false;
+            var is8or9 = /Version\/(8|9)\.0/.test(ua);
+            var is71 = /Version\/7\.0/.test(ua) && /OS 7_1/.test(ua);
+            return is8or9 || is71;
+        }
+
+        function getMajorVersion() {
+            var match = navigator.appVersion.match(/Version\/(\d+)\./);
+            return match ? parseInt(match[1], 10) : null;
+        }
+
+        function loadExploit(ver) {
+            var script = document.createElement('script');
+            if (ver === 7) {
+                script.src = "KDFU/7/exploit.js";
+            } else {
+                script.src = "KDFU/8-9/exploit.js";
+            }
+            document.head.appendChild(script);
+        }
+
+        window.addEventListener('DOMContentLoaded', function () {
+            var btn = document.getElementById('runBtn');
+            var status = document.getElementById('status');
+            if (!is32BitIOS()) {
+                btn.disabled = true;
+                status.textContent = "Device not compatible";
+            } else {
+                currentVer = getMajorVersion();
+                loadExploit(currentVer);
+                status.textContent = "Ready (iOS " + currentVer + ")";
+            }
+        });
+
+        function startKdfu() {
+            var btn = document.getElementById('runBtn');
+            var status = document.getElementById('status');
+            btn.innerText = 'entering kDFU...';
+            btn.disabled = true;
+            status.textContent = 'Running exploit...';
+
+            setTimeout(function () {
+                if (currentVer === 7) {
+                    if (typeof start === 'function') {
+                        start();
+                    } else {
+                        status.textContent = "Failed to load exploit";
+                        btn.innerText = 'enter kdfu';
+                        btn.disabled = false;
+                    }
+                } else {
+                    if (typeof run === 'function') {
+                        run();
+                    } else {
+                        status.textContent = "Failed to load exploit";
+                        btn.innerText = 'enter kdfu';
+                        btn.disabled = false;
+                    }
+                }
+            }, 100);
+        }
+    </script>
+</body>
+</html>
